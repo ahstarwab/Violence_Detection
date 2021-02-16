@@ -2,7 +2,6 @@
 Online and real-time violence recognition
 
 ## Demo Video
-![](violence_demo.gif | 640x360)
-
+<img src="violence_demo.gif" width="640" height="360"/>
 ## Codes will be released soon!
 
