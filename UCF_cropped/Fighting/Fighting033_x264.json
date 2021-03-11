@@ -1,0 +1,15 @@
+{
+	"video_name": "Fighting033_x264_360p",
+	"length": "00:00:05",
+	"frame_num": "149",
+	"event": [
+		{
+			"event": "assault",
+			"start_time": "00:00:20",
+			"end_time": "00:00:25",
+			"start_frame": "600",
+			"end_frame": "749",
+			"origin_file_name": "Fighting033_x264.mp4"
+		}
+	]
+}

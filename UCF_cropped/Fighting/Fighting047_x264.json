@@ -1,0 +1,31 @@
+{
+	"video_name": "Fighting047_x264_360p",
+	"length": "00:01:02",
+	"frame_num": "1858",
+	"event": [
+		{
+			"event": "assault",
+			"start_time": "00:00:03",
+			"end_time": "00:00:25",
+			"start_frame": "90",
+			"end_frame": "749",
+			"origin_file_name": "Fighting047_x264.mp4"
+		},
+		{
+			"event": "assault",
+			"start_time": "00:00:28",
+			"end_time": "00:01:02",
+			"start_frame": "840",
+			"end_frame": "1858",
+			"origin_file_name": "Fighting047_x264.mp4"
+		},
+		{
+			"event": "assault",
+			"start_time": "00:01:16",
+			"end_time": "00:01:22",
+			"start_frame": "2278",
+			"end_frame": "2457",
+			"origin_file_name": "Fighting047_x264.mp4"
+		}
+	]
+}

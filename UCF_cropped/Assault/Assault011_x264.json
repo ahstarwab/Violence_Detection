@@ -1,0 +1,15 @@
+{
+	"video_name": "Assault011_x264_360p",
+	"length": "00:00:32",
+	"frame_num": "959",
+	"event": [
+		{
+			"event": "assault",
+			"start_time": "00:00:13",
+			"end_time": "00:00:45",
+			"start_frame": "390",
+			"end_frame": "1348",
+			"origin_file_name": "Assault011_x264.mp4"
+		}
+	]
+}

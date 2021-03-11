@@ -1,0 +1,63 @@
+{
+	"video_name": "Assault006_x264_360p",
+	"length": "00:01:27",
+	"frame_num": "2607",
+	"event": [
+		{
+			"event": "assault",
+			"start_time": "00:00:39",
+			"end_time": "00:00:43",
+			"start_frame": "1169",
+			"end_frame": "1288",
+			"origin_file_name": "Assault006_x264.mp4"
+		},
+		{
+			"event": "assault",
+			"start_time": "00:00:45",
+			"end_time": "00:01:19",
+			"start_frame": "1349",
+			"end_frame": "2367",
+			"origin_file_name": "Assault006_x264.mp4"
+		},
+		{
+			"event": "assault",
+			"start_time": "00:01:23",
+			"end_time": "00:01:33",
+			"start_frame": "2488",
+			"end_frame": "2787",
+			"origin_file_name": "Assault006_x264.mp4"
+		},
+		{
+			"event": "assault",
+			"start_time": "00:01:40",
+			"end_time": "00:01:53",
+			"start_frame": "2998",
+			"end_frame": "3386",
+			"origin_file_name": "Assault006_x264.mp4"
+		},
+		{
+			"event": "assault",
+			"start_time": "00:02:17",
+			"end_time": "00:02:19",
+			"start_frame": "4106",
+			"end_frame": "4165",
+			"origin_file_name": "Assault006_x264.mp4"
+		},
+		{
+			"event": "assault",
+			"start_time": "00:02:57",
+			"end_time": "00:03:16",
+			"start_frame": "5305",
+			"end_frame": "5874",
+			"origin_file_name": "Assault006_x264.mp4"
+		},
+		{
+			"event": "assault",
+			"start_time": "00:03:17",
+			"end_time": "00:03:22",
+			"start_frame": "5905",
+			"end_frame": "6053",
+			"origin_file_name": "Assault006_x264.mp4"
+		}
+	]
+}
