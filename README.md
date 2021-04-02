@@ -1,10 +1,10 @@
 # Violence_Recognition
 Online and real-time violence recognition
 
-## Demo Video
+## Demo Video (trained on RWF-2000)
 <img src="figures/three.gif" width="640" height="360"/>
 
-## Demo on UCF Crimes
+## Demo on UCF Crimes (trained on RWF-2000)
 <img src="figures/ucf.gif" width="640" height="360"/>
 
 ```
