@@ -1,0 +1,64 @@
+#### general settings
+name: MYNET
+use_tb_logger: true
+
+#### datasets
+datasets:
+  name: RWF
+  train: /home/minseok/RWF2000-Video-Database-for-Violence-Detection/processed/train
+  valid: /home/minseok/RWF2000-Video-Database-for-Violence-Detection/processed/val
+  test: /home/minseok/RWF2000-Video-Database-for-Violence-Detection/processed/val
+  stride: -1
+  
+
+dataloader:
+  train:
+    batch_size: 16
+    shuffle: true
+    # pin_memeory: true
+    num_workers: 50
+
+  valid:
+    batch_size: 16
+    shuffle: true
+    # pin_memeory: true
+    num_workers: 50
+
+  test:
+    batch_size: 1
+    shuffle: false
+    # pin_memeory: true
+    num_workers: 50
+
+
+#### network structures
+MYNET:
+  sequence_size: 30 # Temporal duration of input clip
+
+trainer:
+  epochs: 10000
+  device: 1 
+  save_path: /home/nas/user/minseok/access_resubmission/not_mean_gray
+  #ckpt_path: /home/nas/user/minseok/exp/GLOTIS_model65/RWF/18October_1101/ckpt/best.pt
+  comment: gray
+
+tester:
+  ckpt_path: ./ckpt/RWF/617_3.3689.pt
+  device: 0
+
+
+criterion:
+  name: CrossEntropy
+
+optimizer:
+  name: Adam #RMSprop #RAdam   ### Adam, RMSprop, SGD
+  lr: !!float 1e-3
+  # betas: (0.9, 0.999)
+  eps: !!float 1e-9
+  weight_decay: !!float 1e-2
+
+scheduler:
+  name: cycle
+  min_lr: !!float 1e-8
+  patience: 2
+  factor: 0.5
