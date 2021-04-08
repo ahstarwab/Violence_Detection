@@ -5,11 +5,12 @@ Online and real-time violence recognition
 <img src="figures/three.gif" width="640" height="360"/>
 
 ## Demo on UCF Crimes (trained on RWF-2000)
-<img src="figures/ucf.gif" width="640" height="360"/>
+<img src="figures/final.gif" width="640" height="360"/>
 
 ```
-"Fight" in red : labels provided.
-"FFF" in blue : model's detection result.
+"A" in blue : model's detection result.
+"B" in red : labels provided.
+"C" in green : labels we made.
 ```
 
 ## Codes will be released soon!
