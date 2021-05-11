@@ -3,25 +3,18 @@ import sys
 import time
 import numpy as np
 import datetime
-
 import pickle as pkl
-
 from pathlib import Path
-import cv2
 import torch
+import torch.nn.functional as F
+from torch.utils.tensorboard import SummaryWriter
 import pdb
 from tqdm import tqdm
 from datetime import datetime
-
+import shutil
 import torch
-from torch.utils.tensorboard import SummaryWriter
-from torch.optim.lr_scheduler import ReduceLROnPlateau
-from torch.distributions.multivariate_normal import MultivariateNormal
-import torch.nn.functional as F
-
 import logging
 import json
-from multiprocessing import Pool
 import time
 
 class ModelTrainer:
@@ -37,7 +30,8 @@ class ModelTrainer:
         self.criterion = criterion
         self.optimizer = optimizer
         self.scheduler = scheduler
-
+        self.sch_name = config['scheduler']['name']
+        
         self.loss_type = loss_type
         self.exp_path = Path(os.path.join(save_path, dataset_name, datetime.now().strftime('%d%B_%0l%0M'))) #21November_0430
         self.exp_path.mkdir(exist_ok=True, parents=True)
@@ -66,6 +60,8 @@ class ModelTrainer:
         self.best_acc = 0.0
         self.best_epoch = 0
         
+        self.flag = 0
+        
         if ckpt_path != None:
             self.load_checkpoint(ckpt_path)
 
@@ -81,27 +77,28 @@ class ModelTrainer:
             if v_accuracy > self.best_acc:
                 self.best_acc = v_accuracy
                 self.best_epoch = epoch
+                self.flag = 1
 
-            self.scheduler.step(v_accuracy)
+            if self.sch_name == 'multistep':
+                self.scheduler.step()
+            elif self.sch_name == 'plateau':
+                self.scheduler.step(valid_loss)
 
-            if self.dataset_name == 'AI_HUB':
-                self.logger.info("epoch: {} --- t_loss : {:0.3f}, train_acc = {}%, v_loss: {:0.3f}, val_acc: {}%, best_acc: {}%, best_epoch: {}, time: {:0.2f}s"\
-                                                            .format(epoch, train_loss, t_accuracy/2, valid_loss, v_accuracy/2, self.best_acc, self.best_epoch, duration))
-            else:
-                self.logger.info("epoch: {} --- t_loss : {:0.3f}, train_acc = {}%, v_loss: {:0.3f}, val_acc: {}%, best_acc: {}%, best_epoch: {}, time: {:0.2f}s"\
+            self.logger.info("epoch: {} --- t_loss : {:0.3f}, train_acc = {}%, v_loss: {:0.3f}, val_acc: {}%, best_acc: {}%, best_epoch: {}, time: {:0.2f}s"\
                                                             .format(epoch, train_loss, t_accuracy, valid_loss, v_accuracy, self.best_acc, self.best_epoch, duration))
-    
-                    # self.logger.info("tvloss:{:0.3f}, constrast loss:{:0.3f}, my loss:{:0.3f}"\
-                #                                             .format(losses[0].item(), losses[1].item(), losses[2].item()))
+            
+            
+            if self.flag == 1:
+                self.save_checkpoint(epoch, v_accuracy, True)
+                self.flag = 0
 
-            self.save_checkpoint(epoch, v_accuracy)
+            else:
+                self.save_checkpoint(epoch, v_accuracy, False)
 
             self.writter.add_scalar('data/Train_Loss', train_loss, epoch)
             self.writter.add_scalar('data/Valid_Loss', valid_loss, epoch)
             self.writter.add_scalar('data/Train_Accuracy', t_accuracy, epoch)
             self.writter.add_scalar('data/Valid_Accuracy', v_accuracy, epoch)
-
-
         self.writter.close()
 
 
@@ -114,14 +111,8 @@ class ModelTrainer:
 
         batch_size = len(self.train_loader)
         for b, batch in enumerate(self.train_loader):
-            
-            """
-            images : [B x 2 x T x C x H x W]
-            labels : [B x 2 x T]
-            """
-            # pdb.set_trace()
-            images, labels = batch
-            
+
+            images, labels = batch            
             B, T, C, H, W = images.shape
             
             self.optimizer.zero_grad()
@@ -130,20 +121,9 @@ class ModelTrainer:
             labels = labels.to(self.device)
 
             outputs  = self.model(images)
-            # outputs, losses = self.model(images)
-            
-            if self.loss_type == 'CrossEntropy':    
-                batch_loss = self.criterion(outputs, labels)
-
-            # 
-            # print("{}, {}, {}, {}".format(batch_loss, losses[0].item(), losses[1].item(), losses[2]), end='\r')
-
-            # if epoch < 20:
-            # batch_loss += (losses[0] + losses[1] + losses[2])
-
+            batch_loss = self.criterion(outputs, labels)
             batch_loss.backward()
             self.optimizer.step()
-
 
             total_loss += batch_loss.item()
             _, argmax = outputs.max(1)
@@ -173,15 +153,7 @@ class ModelTrainer:
                 labels = labels.to(self.device)
                 
                 outputs  = self.model(images)
-                # outputs, losses = self.model(images)
-                
-                # if self.dataset_name == 'AI_HUB':
-                #     labels = labels[:,-1]
-                    
                 batch_loss = self.criterion(outputs, labels)
-
-                # if epoch < 20:
-                # batch_loss += (losses[0] + losses[1] + losses[2])
 
                 total_loss += batch_loss.item()
 
@@ -194,17 +166,11 @@ class ModelTrainer:
 
     def load_checkpoint(self, ckpt):
         self.logger.info(f"Loading checkpoint from {ckpt}")
-        # print('Loading checkpoint : {}'.format(ckpt))
         checkpoint = torch.load(ckpt, map_location=self.device)
         pretrained_dict = checkpoint['model_state_dict']
-        model_dict = self.model.state_dict()
-        pretrained_dict = {k: v for k, v in pretrained_dict.items()if (k in model_dict and 'base_model.classifier' not in k)}
-        model_dict.update(pretrained_dict)
-        self.model.load_state_dict(model_dict)
-        # self.optimizer.load_state_dict(checkpoint['optimizer'])
-
-        # self.model.load_state_dict(checkpoint['model_state_dict'], strict=False)
-
+        optimizer_params = checkpoint['optimizer']
+        self.model.load_state_dict(pretrained_dict)
+        self.optimizer.load_state_dict(optimizer_params)
 
     def save_checkpoint(self, epoch, vacc, best=True):
         
@@ -215,99 +181,7 @@ class ModelTrainer:
         }
         
         self.exp_path.joinpath('ckpt').mkdir(exist_ok=True, parents=True)
-        save_path = "{}/ckpt/{}_{:0.4f}.pt".format(self.exp_path, epoch, vacc)
+        save_path = "{}/ckpt/last.pt".format(self.exp_path)
         torch.save(state_dict, save_path)
-
-
-class ModelTester:
-    def __init__(self, model, test_loader, ckpt_path, device):
-
-        # Essential parts
-        self.device = torch.device('cuda:{}'.format(device))
-        self.model = model.to(self.device)
-        self.test_loader = test_loader
-        # Set logger
-        self.logger = logging.getLogger('')
-        self.logger.setLevel(logging.INFO)
-        sh = logging.StreamHandler(sys.stdout)
-        self.logger.addHandler(sh)
-
-        self.load_checkpoint(ckpt_path)
-
-
-    def load_checkpoint(self, ckpt):
-        self.logger.info(f"Loading checkpoint from {ckpt}")
-        # print('Loading checkpoint : {}'.format(ckpt))
-        checkpoint = torch.load(ckpt, map_location=self.device)
-        self.model.load_state_dict(checkpoint['model_state_dict'], strict=False)
-        
-
-
-    def test(self):
-        """
-        images : [B x T x C x H x W]
-        labels : [B x T]
-        """
-        self.model.eval()
-        total_loss = 0.0
-        
-        output_list = []
-        label_list = []
-
-        with torch.no_grad():
-            for b, batch in tqdm(enumerate(self.test_loader), total=len(self.test_loader)):
-                images, labels = batch
-                images = images.to(self.device)
-                labels = labels.to(self.device)
-
-                outputs = self.model(images)
-                # [B x Class]
-                
-                _, output = torch.max(outputs, 1)
-                
-                output_list.extend(output)
-                label_list.extend(labels)
-                batch_acc = float(len(output) - sum(abs(output-labels)))/len(output)
-                self.logger.info(f"Batch_Accuracy : {batch_acc}")
-        
-        output_list = torch.tensor(output_list)
-        label_list = torch.tensor(label_list)
-        tot_acc = float(len(output_list) - sum(abs(output_list-label_list)))/len(output_list)
-        self.logger.info(f"Final Accuracy : {tot_acc}")
-        # pdb.set_trace()
-        return output_list
-
-    def demo(self):
-        """
-        images : [B x T x C x H x W]
-        labels : [B x T]
-        """
-        self.model.eval()
-        total_loss = 0.0
-        
-        output_list = []
-        
-        with torch.no_grad():
-            for b, batch in tqdm(enumerate(self.test_loader), total=len(self.test_loader)):
-                images = batch
-                images = images.to(self.device)
-                outputs = self.model(images)
-                # [B x Class]
-                
-                _, output = torch.max(outputs, 1)
-
-                if output.item() == 1:
-                    output = 1
-                else:
-                    output = 0
-
-                output_list.append(output)
-                # batch_loss = self.criterion(outputs, labels[:,-1].long())     
-                # total_loss += batch_loss.item()
-        
-        return output_list
-
-    def visualizaition(self):
-        # to be updated
-        pass
-
+        if best:
+            shutil.copyfile(save_path, '{}/ckpt/best.pt'.format(self.exp_path))

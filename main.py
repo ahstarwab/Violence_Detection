@@ -5,15 +5,14 @@ import pdb
 import argparse
 import yaml 
 from torch.utils.data import DataLoader
-from trainer import ModelTrainer, ModelTester
+from trainer import ModelTrainer
+from tester import ModelTester
 from utils.setup import setup_solver
 import os
 import pickle
-
+from model import MYNET
 
 def train(args):
-    from model import MYNET
-    
     with open(os.path.join(args.config,args.dataset + '.yml'), mode='r') as f:
         config = yaml.load(f,Loader=yaml.FullLoader)
 
@@ -33,29 +32,21 @@ def train(args):
     trainer.train()
 
 
-# def test(args):
-#     from model import MYNET
+def test(args):
+    with open(os.path.join(args.config,args.dataset + '.yml'), mode='r') as f:
+        config = yaml.load(f,Loader=yaml.FullLoader)
 
-#     with open(os.path.join(args.config,args.dataset + '.yml'), mode='r') as f:
-#         config = yaml.load(f,Loader=yaml.FullLoader)
-
-#     model = MYNET(**config['MYNET'])
+    model = MYNET(**config['MYNET'])
     
-#     if args.dataset == 'RWF':
-#         from datasets.RWF_test import RWF_test
-#         test_dataset = RWF_test(config['datasets']['test'], config['MYNET']['sequence_size'])
+    if args.dataset == 'RWF':
+        from datasets.RWF_test import RWF_test
+        test_dataset = RWF_test(config['datasets']['test'], config['MYNET']['sequence_size'])
 
-#     elif args.dataset == 'TestData':
-#         from datasets.TestData import TestData
-#         test_dataset = TestData(config['datasets']['test'], config['MYNET']['sequence_size'])
-
-#     test_loader = DataLoader(test_dataset, **config['dataloader']['test'])
-    
-#     print("Mode : Test")
-#     tester = ModelTester(model, test_loader, **config['tester'])
-#     output = tester.test()
-#     with open("output.pkl", "wb") as f:
-#         pickle.dump(output, f)
+    test_loader = DataLoader(test_dataset, **config['dataloader']['test'])
+    tester = ModelTester(model, test_loader, **config['tester'])
+    output = tester.test()
+    with open("output.pkl", "wb") as f:
+        pickle.dump(output, f)
 
 
 if __name__ == '__main__':
@@ -68,5 +59,5 @@ if __name__ == '__main__':
 
     if args.mode == 'Train':
         train(args)
-    # elif args.mode == 'Test':
-    #     test(args)
+    elif args.mode == 'Test':
+        test(args)
