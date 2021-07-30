@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import pdb
-from utils.utils import make_encoder
 from efficientnet_pytorch import EfficientNet
 
 
