@@ -17,8 +17,8 @@ class MYNET(nn.Module):
         
     def forward(self, rgb):
         B = rgb.shape[0]
-        PA = self.Spatial_Attention(rgb)
-        encoded_features = rgb[:,1:,...]*PA
+        SA = self.motion_features(rgb)
+        encoded_features = rgb[:,1:,...]*SA
         backbone_out = self.backbone(encoded_features.mean(2).reshape(-1, 3, 224, 224))
         temporal_vec = (backbone_out).reshape(B, self.sequence_size//3, -1)
         return self.Temporal_Attention(temporal_vec)
