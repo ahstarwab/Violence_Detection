@@ -10,7 +10,9 @@ from tester import ModelTester
 from utils.setup import setup_solver
 import os
 import pickle
-from model import MYNET
+# from model import MYNET
+from model_no_att import MYNET
+
 
 def train(args):
     with open(os.path.join(args.config,args.dataset + '.yml'), mode='r') as f:
