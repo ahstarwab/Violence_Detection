@@ -1,4 +1,4 @@
 python main.py \
 -c ./config \
--d EtcData \
+-d RWF \
 -m Train
