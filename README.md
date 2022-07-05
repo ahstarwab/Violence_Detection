@@ -7,9 +7,10 @@ Preprocessing code from an official RWF-2000 github (https://github.com/mchengny
 
 
 ## How to train
-1. Choose model first. ( model / model_no_att ) \\
- -- Comment or Uncomment line 13 - 14 from main.py \\ 
- -- Model without attention is good trade-off model in practice. \\
+1. Choose model first. ( model / model_no_att )   
+ -- Comment or Uncomment line 13 - 14 from main.py  
+ -- Model without attention is good trade-off model in practice.   
+ 
 
 2. 
 ```
